@@ -37,7 +37,7 @@ Estimation of minor allele frequency from pooled-sequenced Next-generation-seque
 
 ## Estimate allele frequency likelihoods (without SNP calling)
 
-	julia ngsPool.jl --fin test.mpileup.gz --fout test.out.gz --thSnp -Inf --nSamp 220 --fsaf test.saf.gz
+	julia ngsPool.jl --fin test.mpileup.gz --fout test.out.gz --lrtSnp -Inf --nSamp 220 --fsaf test.saf.gz
 
 	less -S test.out.gz
 	less -S test.saf.gz
