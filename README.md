@@ -20,10 +20,10 @@ Estimation of minor allele frequency from pooled-sequenced Next-generation-seque
 	ls test.*
 	
 ### Simulating pool data for case
-time Rscript simulMpileup_case.R --rr 2 --prevalence 0.1 --out_qqVector data2/case_control/qqVector-1-1.txt --out data2/case_control/test-case-1-1.txt --copy 2x80 --sites 1000 --depth 5 --pool | gzip > data2/case_control/mpileup-case-1-1.gz
+	time Rscript simulMpileup_case.R --rr 2 --prevalence 0.1 --out_qqVector data2/case_control/qqVector-1-1.txt --out data2/case_control/test-case-1-1.txt --copy 2x80 --sites 1000 --depth 5 --pool | gzip > data2/case_control/mpileup-case-1-1.gz
 
 ### Simulating pool data for control
-time Rscript simulMpileup_control.R --rr 2 --prevalence 0.1 --qqVector qqVector-1-1.txt --out test-control-1-1.txt --copy 2x80 --sites 1000 --depth 5 --pool | gzip > mpileup-control-1-1.gz
+	time Rscript simulMpileup_control.R --rr 2 --prevalence 0.1 --qqVector qqVector-1-1.txt --out test-control-1-1.txt --copy 2x80 --sites 1000 --depth 5 --pool | gzip > mpileup-control-1-1.gz
 
 
 
