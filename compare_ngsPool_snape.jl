@@ -1,5 +1,5 @@
 
-#compare the response of two software (ngsPool and Snape) to significance levels employed
+#compare the response of two software (ngsPool and Snape) at different significance levels employed
 using Statistics, StatsPlots
 
 
