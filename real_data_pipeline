@@ -1,0 +1,108 @@
+
+#prepare the reference genome
+cd /mnt/c/Fraca_raw
+out="PopB_pooled_L4" #25 individuals
+out_dir="/mnt/c/Fraca_out/"
+Fraca_dir="/mnt/H/julia/ngsJulia/ngsPool/pooled_WGS/"
+
+chr_pool=2*25 #Arabidopsis lyrata has 8 chromosomes (without information specified from Fraca, assume they're all pooled) but diploid
+  #chromosome pooled=ploidy * nIndividual
+  min=4 #read depth should be at least 4
+  #depth depends on L1-L4
+  max=$chr_pool*$depth # maximum coverage: 50(chromosome=ploidy * individual)*10(depth per individual?)=ploidy * depth
+  min_qual=20 #base quality
+  l_npstat=1000 #bp of the windows for NPStat
+  min_all=2 #minimum allele count for Snape, VarScan and NPStat
+  pp_snape=0.9 #posterior probability threshold for Snape
+
+#process_dir:
+# mkdir ref
+# mkdir map
+# mkdir out
+
+cp ref.fasta ref
+bwa index ref/ref.fasta
+
+gzip -d $out"_2.fastq.gz"
+gzip -d $out"_1.fastq.gz" # only FASTQ usually stored in GZ due to memory, fasta occupy much less
+
+#map the reads to the ref genome
+bwa aln -n 0.01 -l 100 -o 1 -d 12/ -e 12 -t 8 ref/ref.fasta $out"_1.fastq" > map/$out"_1.sai"
+bwa aln -n 0.01 -l 100 -o 1 -d 12/ -e 12 -t 8 ref/ref.fasta $out"_2.fastq" > map/$out"_2.sai"
+
+bwa samse ref/ref.fasta map/$out"_1.sai" $out"_1.fastq" > map/$out"_1.sam"
+bwa samse ref/ref.fasta map/$out"_2.sai" $out"_2.fastq" > map/$out"_2.sam"
+
+gzip $out"_1.fastq"
+gzip $out"_2.fastq"
+
+# Creat mpileup file
+samtools mpileup  -f ref/ref.fasta -B map/$out"_1_2.bam" map/$out"_2_2.bam" > $out.mpileup
+#-r 8scaffold.bed, without bed file works all right
+#-b (input bam file list) as -B (disable BAQ (per-Base Alignment Quality))
+wc *mpileup
+
+##Use mpileup file to compare the performance####################################
+cd /mnt/c/Fraca_raw
+out="PopB_pooled_L4" #the name of file analyzed
+Fraca_dir="/mnt/H/julia/ngsJulia/ngsPool/pooled_WGS/" #snape and varscan not written but used by Fraca
+Popoo_dir="/mnt/H/julia/ngsJulia/ngsPool/popoolation2_1201/"
+
+#1.Popoolation
+echo "perl time"
+time perl $Popoo_dir"mpileup2sync.pl" --fastq-type sanger --min-qual 20 --input $out.mpileup --output out/$out.sync
+
+##should the sanger be illuminia here? as it's pooled data. Or the sanger just refer to the fastq type...
+
+#or
+echo "java time"
+time java -ea -Xmx7g -jar $Popoo_dir"mpileup2sync.jar" --input $out.mpileup --fastq-type sanger --min-qual 20 --threads 8 --output out/$out"_java.sync"
+#much less time
+
+#snape or varscan ########
+
+
+#2. Snape---------------------------------------------
+#The nucleotide diversity and the genetic differentiation from the reference genome that are needed
+ #to set prior probabilities in the Bayesian model of Snape were calculated by NPStat [37].
+
+#in linux run `gcc NPStat-v1.c -I$GSL_HOME/include -L$GSL_HOME/lib -lgsl -lgslcblas -lm` to install the npstat
+$Fraca_dir"npstat" -n $chr_pool -l $l_npstat -mincov $min -maxcov $max -minqual $min_qual -nolowfreq $min_all $out.mpileup > out/$out.stats
+ #omitted -outgroup $scaffold_fa
+ #will output $out".stats" in default
+
+#NR: number of records variable (awk NR gives the total number of records being processed or line number)
+theta=$(awk '{sum+=$6} END {print sum/NR}' out/$out".mpileup.stats") #here $out"_filt.mpileup.stats" as input file
+ #nucleotide diversity
+ #mean(sum/NR) of the 6th column
+D=$(awk '{sum+=$13} END {print sum/NR}' out/$out".mpileup.stats")
+ #Prior genetic difference between reference genome and population
+echo "#Chromosomes $out, theta is $theta, D is $D" > out/$out"_stat" #won't print
+
+$Fraca_dir"snape-pooled" -nchr $chr_pool -theta $theta -D $D -fold unfolded -priortype informative < $out.mpileup | awk '$9 > '$pp_snape'' | awk '$5 >='$min_all'' > out/$out.snape
+ #$out"_filt.*"  => $out".*"
+#wc -l out/$out".snape" >> out/$out"_stat"
+
+#3. VarScan--------------------------------------------------------
+echo "VarScan time"
+java -Xmx2g -jar $Fraca_dir"VarScan.v2.3.9.jar" mpileup2snp $out".mpileup" --min-coverage $min --min-avg-qual $min_qual --min-reads2 $min_all --p-value 0.05 > out/$out.varscan
+  #use mpileup2snp instead of pileup2snp
+  #also not mpileup2cns(SNP/Indel/Reference)
+
+ #$out"_filt.*"  => $out".*"
+#wc -l out/$out".varscan" >> out/$out"_stat"
+
+
+#4. ngsPool---------------------------------------------------------
+#julia ngsPool.jl
+gzip $out.mpileup
+echo "julia time"
+
+cd /mnt/c/Fraca_raw
+out="PopB_pooled_L4"
+time julia /mnt/H/julia/ngsJulia/ngsPool/ngsPool.jl --fin $out.mpileup.gz --fout out/$out"-snp.out.gz" --nChroms 25
+#--lrtSnp 7.82 as default if not specified
+# 14 individuals in population A, 25 in population B
+time julia /mnt/H/julia/ngsJulia/ngsPool/ngsPool.jl --fin $out.mpileup.gz --fout out/$out.out.gz --nChroms 25 --lrtSnp -Inf
+#real    87m42.696s
+#user    61m31.125s
