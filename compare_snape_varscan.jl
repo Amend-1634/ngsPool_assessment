@@ -1,4 +1,4 @@
-#A trial: compare Snape and VarScan estimation with real data (not included in report)
+#A trial: compare Snape and VarScan estimation from real data (not included in report)
 
 #Snape outpu
 cd("C:\\simu_raw\\sig_snape")
