@@ -1,6 +1,6 @@
 ##Exploring software Snape and compare ngsPool and Snape
 
-    #also tested why snape are all empty when sample size=10
+    #also tested why snape are all empty when sample size>50
 
 #-nchr \$nChroms => -nchr $nsamp
 #maxcov back to be 100
