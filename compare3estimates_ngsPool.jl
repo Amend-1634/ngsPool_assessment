@@ -1,8 +1,7 @@
-#func_read_plot2(2020/8/12)
-using CSV, CodecZlib, Plots, DelimitedFiles, Plots.PlotMeasures, DataFrames
+##compare the 3 estimates contributed by ngsPool, which are
+ #maximum likelihood estimates from Golden section search, Site spectrum frequency ; and expected estimates
 
-#form: :chrom(string), :position(Int), :algorithm_software(float)]
-#name: the full name
+using CSV, CodecZlib, Plots, DelimitedFiles, Plots.PlotMeasures, DataFrames
 
 #read the gzipped file containing estimation of ngsPool with SNP calling
 function read_ngsPool_snp(filename) #all are SNP calling
