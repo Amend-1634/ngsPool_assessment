@@ -26,6 +26,10 @@
 - compare_power_sample.jl #analysises of which the true MAFs are nromally sampled (the sampling is simulating the SFS of real data)
 
 -----------------------
+- simulMpileup.R 		#simulate mpileup (cited from )
+- simulMpileup_qqVector.R	#simulate mpileup based on fixed Site frequency spectrum
+- simulMpileup_qq.R		#simulate mpileup based on fixed Minor allele frequency
+-----------------------
 - real_data_pipeline # pipeline in bash script to get the estimation of MAF from real data (FASTQ file) 
          
 
