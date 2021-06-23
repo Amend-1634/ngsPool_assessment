@@ -1,32 +1,31 @@
 # ngsPool_assessment
 
-## Introduction
+# Introduction
   This project aims to compare the software ngsPool with commonly used software for Pooled-seq data such as Popoolation2, Snape and VarScan
 
   For a full description and installation of the software ngsPool, visit the project page: https://github.com/mfumagalli/ngsJulia.git
 
-## Installation
+# Installation
 - Popoolation2 (https://sourceforge.net/projects/popoolation2/)
 - Snape (https://code.google.com/archive/p/snape-pooled/downloads)
 - VarScan (https://sourceforge.net/projects/varscan/; mannual http://varscan.sourceforge.net/using-varscan.html#v2.3_mpileup2snp)
 
-## Annotation of scripts
------------------------
+# Annotation of scripts
 ## 1. Comparing program using simulated data
- # 2.1 simulate mpileup
+### 2.1 simulate mpileup
 - simulMpileup.R 		      # original script quoted from the repository: SamueleSoraggi/HMMploidy
 - simulMpileup_qqVector.R	# modified to simulate mpileup based on fixed Site frequency spectrum
 - simulMpileup_qq.R		    # modified to simulate mpileup based on fixed Minor allele frequency
 -----------------------
-##2.2 compare programs
+### 2.2 compare programs
 - compare3estimates_ngsPool.jl # compare 3 estimates of ngsPool: maximum likelihood (GSS), maximum likelihood (SFS), expected estimate
 - compare_Snape.jl # exploring the setting of Snape (i.e. infuence of informative prior and flat prior MAF)
 - compare_ngsPool_snape.jl # compare the SNP calling by two software at different singificance levels
 - compare_snape_varscan.jl
 -----------------------
-##2.3 sidequest tests
-- compare_power_qqVector.jl  #analysises of which the true MAFs are fixed (specially focus on low MAFs)
-- compare_power_sample.jl #analysises of which the true MAFs are normally sampled (the sampling is simulating the SFS of real data)
+### 2.3 sidequest tests
+- compare_power_qqVector.jl  # calculated power and FPR of SNP calling using simulated data with fixed expected Minor allele frequency (using simulMpileup_qq.R)
+- compare_power_sample.jl #calculated power and FPR of SNP calling using simulated data with sampled SFS (using simulMpileup.R: expected minor allele frequency is sampled from sampled Site Frequency Spectrum)
 
 -----------------------
 ## 2. Comparing program using real data 
